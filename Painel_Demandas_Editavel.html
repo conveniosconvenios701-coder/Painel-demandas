@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de Demandas Comerciais</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--azul:#1F4E79;--azul-mid:#2E75B6;--bg:#F0F4F8;--card:#fff}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:#1a1a2e;min-height:100vh}
+
+header{background:var(--azul);padding:24px 40px 20px;position:relative;overflow:hidden}
+header::before{content:'';position:absolute;top:-60px;right:-60px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,0.04)}
+header::after{content:'';position:absolute;bottom:-80px;left:30%;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,0.03)}
+.header-top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px}
+header h1{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:#fff;letter-spacing:-0.5px;line-height:1.2}
+header h1 span{color:#7EC8E3}
+header p{color:rgba(255,255,255,0.6);font-size:12px;margin-top:5px}
+.header-stats{display:flex;gap:10px;flex-wrap:wrap}
+.hstat{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:9px 16px;text-align:center;min-width:76px}
+.hstat-num{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#fff}
+.hstat-label{font-size:10px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:0.5px;margin-top:1px}
+
+.toolbar{background:#fff;border-bottom:1px solid #E5EAF0;padding:12px 40px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;top:0;z-index:100}
+.toolbar-label{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.8px;margin-right:4px}
+.btn-export{display:flex;align-items:center;gap:6px;padding:8px 18px;border-radius:30px;border:none;background:var(--azul);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity 0.15s;margin-left:auto}
+.btn-export:hover{opacity:0.88}
+.btn-add{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:30px;border:1.5px solid #D1D5DB;background:#fff;color:#444;font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s}
+.btn-add:hover{border-color:var(--azul-mid);color:var(--azul);background:#EEF4FB}
+.edit-badge{display:flex;align-items:center;gap:5px;font-size:11px;color:#639922;font-weight:500}
+.edit-dot{width:7px;height:7px;border-radius:50%;background:#639922;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+.resumo-strip{display:flex;gap:10px;flex-wrap:wrap;padding:16px 40px 0}
+.r-card{flex:1;min-width:100px;border-radius:12px;padding:11px 13px;cursor:pointer;transition:transform 0.15s;border:2px solid transparent}
+.r-card:hover{transform:translateY(-2px)}
+.r-card.ativo{border-color:rgba(0,0,0,0.18)}
+.r-num{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;line-height:1}
+.r-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-top:3px;opacity:0.75}
+.r-all{background:#1F4E79;color:#fff}.r-agd{background:#FCE4D6;color:#833C00}.r-neg{background:#DDEBF7;color:#185FA5}
+.r-prop{background:#E6F1FB;color:#0C447C}.r-ana{background:#F2F2F2;color:#444441}.r-and{background:#DEEAF1;color:#1F4E79}
+.r-conc{background:#EAF3DE;color:#27500A}.r-reu{background:#EDE9FE;color:#4C1D95}
+
+.busca-wrap{padding:14px 40px 0}
+.busca{width:100%;max-width:360px;padding:9px 16px 9px 38px;border:1.5px solid #D1D5DB;border-radius:30px;font-size:13px;font-family:'Inter',sans-serif;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 12px center;outline:none;transition:border-color 0.18s}
+.busca:focus{border-color:var(--azul-mid)}
+
+.filtros-wrap{padding:14px 40px 0}
+.filtros-titulo{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.filtros{display:flex;gap:8px;flex-wrap:wrap}
+.f-btn{display:flex;align-items:center;gap:6px;padding:6px 13px;border-radius:30px;border:1.5px solid #D1D5DB;background:#fff;color:#555;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.18s;font-family:'Inter',sans-serif}
+.f-btn:hover{border-color:var(--azul-mid);color:var(--azul);background:#EEF4FB}
+.f-btn.ativo{background:var(--azul);color:#fff;border-color:var(--azul)}
+.f-btn .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+.grid-wrap{padding:18px 40px 40px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.nenhum{text-align:center;padding:60px 20px;color:#aaa;font-size:15px}
+
+.card{background:var(--card);border-radius:16px;border:1px solid #E5EAF0;overflow:hidden;transition:transform 0.18s,box-shadow 0.18s}
+.card:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(31,78,121,0.09)}
+.card-header{padding:13px 15px 11px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #F0F4F8;background:#FAFBFC}
+.conv-icon{width:34px;height:34px;border-radius:10px;background:var(--azul);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+.conv-nome{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#1a1a2e;flex:1}
+.conv-qtd{font-size:10px;color:#888;background:#EEF2F7;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.btn-add-demanda{width:24px;height:24px;border-radius:50%;border:1.5px solid #D1D5DB;background:#fff;color:#888;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0;line-height:1}
+.btn-add-demanda:hover{border-color:var(--azul-mid);color:var(--azul);background:#EEF4FB}
+
+.card-body{padding:8px 13px 10px}
+.demanda-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #F3F4F6;align-items:flex-start;position:relative}
+.demanda-item:last-child{border-bottom:none;padding-bottom:0}
+.d-linha{width:3px;border-radius:2px;flex-shrink:0;margin-top:4px;align-self:stretch;min-height:28px}
+.d-corpo{flex:1;min-width:0}
+
+/* Campos editáveis */
+.d-titulo{font-size:12px;font-weight:600;color:#1a1a2e;line-height:1.4;cursor:text;padding:2px 4px;border-radius:4px;border:1px solid transparent;transition:border-color 0.15s;outline:none;width:100%;background:transparent;font-family:'Inter',sans-serif}
+.d-titulo:hover{border-color:#E0E7FF;background:#F8FAFF}
+.d-titulo:focus{border-color:var(--azul-mid);background:#F8FAFF}
+
+.d-desc{font-size:11px;color:#666;margin-top:3px;line-height:1.4;cursor:text;padding:2px 4px;border-radius:4px;border:1px solid transparent;transition:border-color 0.15s;outline:none;width:100%;background:transparent;font-family:'Inter',sans-serif;resize:none;overflow:hidden}
+.d-desc:hover{border-color:#E0E7FF;background:#F8FAFF}
+.d-desc:focus{border-color:var(--azul-mid);background:#F8FAFF}
+
+.d-status-wrap{display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:wrap}
+.d-badge{display:inline-block;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;letter-spacing:0.2px;cursor:pointer;transition:opacity 0.15s;border:none;font-family:'Inter',sans-serif}
+.d-badge:hover{opacity:0.8}
+
+.btn-del{width:20px;height:20px;border-radius:50%;border:none;background:transparent;color:#ccc;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0;padding:0;line-height:1;margin-top:2px}
+.btn-del:hover{background:#FEE2E2;color:#DC2626}
+
+/* Dropdown de status */
+.status-dropdown{position:fixed;background:#fff;border:1px solid #E5EAF0;border-radius:12px;padding:6px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:1000;min-width:190px;display:none}
+.status-dropdown.aberto{display:block}
+.status-opt{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;transition:background 0.12s;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;border:none;background:transparent;width:100%;text-align:left}
+.status-opt:hover{background:#F3F4F6}
+.status-opt .opt-badge{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
+
+/* Modal novo convênio */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:none;align-items:center;justify-content:center}
+.overlay.aberto{display:flex}
+.modal{background:#fff;border-radius:20px;padding:28px;width:90%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+.modal h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:#1a1a2e;margin-bottom:18px}
+.modal label{font-size:12px;font-weight:600;color:#666;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px}
+.modal input,.modal select{width:100%;padding:10px 14px;border:1.5px solid #D1D5DB;border-radius:10px;font-size:13px;font-family:'Inter',sans-serif;outline:none;transition:border-color 0.15s;margin-bottom:14px}
+.modal input:focus,.modal select:focus{border-color:var(--azul-mid)}
+.modal-btns{display:flex;gap:10px;margin-top:4px}
+.btn-confirmar{flex:1;padding:10px;border:none;border-radius:10px;background:var(--azul);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.btn-cancelar{flex:1;padding:10px;border:1.5px solid #D1D5DB;border-radius:10px;background:#fff;color:#666;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+
+footer{text-align:center;padding:18px;font-size:11px;color:#aaa;border-top:1px solid #E5EAF0;background:#fff}
+
+.s-aguardando{background:#FCE4D6;color:#833C00}.s-negociacao{background:#DDEBF7;color:#185FA5}
+.s-proposta{background:#E6F1FB;color:#0C447C}.s-analise{background:#F2F2F2;color:#444441}
+.s-andamento{background:#DEEAF1;color:#1F4E79}.s-concluido{background:#EAF3DE;color:#27500A}
+.s-reuniao{background:#EDE9FE;color:#4C1D95}
+.linha-aguardando{background:#ED7D31}.linha-negociacao{background:#2E75B6}.linha-proposta{background:#5B9BD5}
+.linha-analise{background:#9CA3AF}.linha-andamento{background:#3B82F6}.linha-concluido{background:#639922}
+.linha-reuniao{background:#7C3AED}
+
+@media(max-width:600px){header,.toolbar,.filtros-wrap,.busca-wrap,.grid-wrap,.resumo-strip{padding-left:16px;padding-right:16px}header h1{font-size:20px}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div>
+      <h1>Painel de <span>Demandas</span><br>Comerciais</h1>
+      <p>Acompanhamento dos processos em andamento · Clique para editar qualquer campo</p>
+    </div>
+    <div class="header-stats">
+      <div class="hstat"><div class="hstat-num" id="cnt-total">0</div><div class="hstat-label">Demandas</div></div>
+      <div class="hstat"><div class="hstat-num" id="cnt-conv">0</div><div class="hstat-label">Convênios</div></div>
+      <div class="hstat"><div class="hstat-num" id="cnt-agd">0</div><div class="hstat-label">Aguardando</div></div>
+      <div class="hstat"><div class="hstat-num" id="cnt-conc">0</div><div class="hstat-label">Concluídas</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <span class="edit-badge"><span class="edit-dot"></span> Modo edição ativo</span>
+  <button class="btn-add" onclick="abrirModalConvenio()">+ Novo convênio</button>
+  <button class="btn-export" onclick="exportarHTML()">⬇ Exportar painel atualizado</button>
+</div>
+
+<div class="resumo-strip" id="resumo-strip"></div>
+<div class="busca-wrap"><input class="busca" type="text" placeholder="Buscar convênio ou demanda..." id="busca" oninput="renderGrid()"></div>
+<div class="filtros-wrap">
+  <div class="filtros-titulo">Filtrar por status</div>
+  <div class="filtros" id="filtros"></div>
+</div>
+<div class="grid-wrap">
+  <div class="grid" id="grid"></div>
+  <div class="nenhum" id="nenhum" style="display:none">Nenhuma demanda encontrada.</div>
+</div>
+
+<footer>Painel de Demandas Comerciais · Editável · Exporte para compartilhar</footer>
+
+<!-- Dropdown de status -->
+<div class="status-dropdown" id="status-dropdown">
+  <div id="status-opts"></div>
+</div>
+
+<!-- Modal novo convênio / demanda -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modal-titulo">Novo convênio</h3>
+    <div id="modal-body"></div>
+    <div class="modal-btns">
+      <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+      <button class="btn-confirmar" id="btn-confirmar">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STATUS = {
+  aguardando: { label:"Aguardando operadora", cls:"s-aguardando", linha:"linha-aguardando", cor:"#ED7D31" },
+  negociacao: { label:"Em negociação",         cls:"s-negociacao",  linha:"linha-negociacao",  cor:"#2E75B6" },
+  proposta:   { label:"Proposta enviada",       cls:"s-proposta",   linha:"linha-proposta",    cor:"#5B9BD5" },
+  analise:    { label:"Em análise",             cls:"s-analise",    linha:"linha-analise",     cor:"#9CA3AF" },
+  andamento:  { label:"Em andamento",           cls:"s-andamento",  linha:"linha-andamento",   cor:"#3B82F6" },
+  concluido:  { label:"Concluído",              cls:"s-concluido",  linha:"linha-concluido",   cor:"#639922" },
+  reuniao:    { label:"Reunião agendada",       cls:"s-reuniao",    linha:"linha-reuniao",     cor:"#7C3AED" },
+};
+
+const ICONES = {"Demandas Gerais":"🏥","APUB":"📋","Bradesco":"🏦","CASSI":"🩺","Sulamérica":"💊","AMIL":"❤️","Marinha":"⚓","Banco Central / Pro Social":"🏛️","Select Saúde":"✅","Saúde Petrobras":"🔷","Saúde Caixa":"🏠","CNU":"🪪","Planserv":"📜","Unafisco":"⚖️","CASSEB":"🫁","CAMED":"💉"};
+
+let dados = [
+  {nome:"Demandas Gerais",demandas:[
+    {titulo:"Pacotes de Endometriose",desc:"Propostas enviadas e em acompanhamento junto às operadoras",status:"proposta"},
+    {titulo:"Implantes Hormonais",desc:"Proposta confeccionada — reunião agendada p/ 28/05 c/ equipe estratégica",status:"reuniao"},
+    {titulo:"Pacotes de Cabeça e Pescoço",desc:"Propostas encaminhadas e em acompanhamento",status:"proposta"},
+  ]},
+  {nome:"APUB",demandas:[
+    {titulo:"Recontratualização",desc:"Análise da minuta contratual em andamento",status:"analise"},
+  ]},
+  {nome:"Bradesco",demandas:[
+    {titulo:"Cirurgia Endoscópica da Coluna",desc:"Aguardando emissão do aditivo pela operadora",status:"aguardando"},
+    {titulo:"Reajuste Book HCR e HSA",desc:"Aguardando aditivo de reajuste",status:"aguardando"},
+    {titulo:"Especialidades TEA – IBR",desc:"Aguardando aditivo (Fonoaudiologia e Psicopedagogia)",status:"aguardando"},
+    {titulo:"Pacote de Endometriose",desc:"Em tratativa ativa com a operadora",status:"negociacao"},
+    {titulo:"Reajuste 2026",desc:"Tratativas em andamento para o próximo ciclo",status:"negociacao"},
+  ]},
+  {nome:"CASSI",demandas:[
+    {titulo:"Pacote de Endometriose",desc:"Em tratativa ativa com a operadora",status:"negociacao"},
+    {titulo:"Pacote de Cabeça e Pescoço",desc:"Em tratativa com a operadora",status:"negociacao"},
+    {titulo:"Extensão – Emergência Cirurgia Geral",desc:"Proposta de extensão da emergência enviada",status:"proposta"},
+    {titulo:"Extensão LEM – IBR",desc:"Proposta de extensão para o LEM–IBR enviada",status:"proposta"},
+  ]},
+  {nome:"Sulamérica",demandas:[
+    {titulo:"Histeroscopia Cirúrgica e Diagnóstica",desc:"Avaliação dos pacotes em andamento",status:"analise"},
+    {titulo:"Redução Exames Laboratoriais (SAS)",desc:"Análise da redução solicitada pela SAS",status:"analise"},
+  ]},
+  {nome:"AMIL",demandas:[
+    {titulo:"HM Diferenciado – Endometriose/C&P",desc:"Proposta de honorário médico diferenciado enviada",status:"proposta"},
+    {titulo:"Pacote Endoscopia e Colonoscopia",desc:"Proposta enviada, aguardando análise",status:"proposta"},
+    {titulo:"Negociação de Reajuste",desc:"Tratativas de reajuste em andamento",status:"negociacao"},
+    {titulo:"Pacote de Emergência",desc:"Aguardando retorno sobre proposta enviada",status:"aguardando"},
+  ]},
+  {nome:"Marinha",demandas:[
+    {titulo:"Composição de Edital",desc:"Urologia, Ginecologia, Obstetrícia, Endoscopia, Colonoscopia, Diárias e Taxas",status:"proposta"},
+  ]},
+  {nome:"Banco Central / Pro Social",demandas:[
+    {titulo:"Credenciamento IBR",desc:"Processo de credenciamento em andamento",status:"andamento"},
+  ]},
+  {nome:"Select Saúde",demandas:[
+    {titulo:"Credenciamento IBR",desc:"Aguardando recebimento do contrato de credenciamento",status:"aguardando"},
+  ]},
+  {nome:"Saúde Petrobras",demandas:[
+    {titulo:"Pacotes de Ortopedia",desc:"Proposta enviada, aguardando retorno da operadora",status:"proposta"},
+  ]},
+  {nome:"Saúde Caixa",demandas:[
+    {titulo:"Ortopedia – Joelho",desc:"Negociação finalizada com sucesso ✓",status:"concluido"},
+    {titulo:"Ortopedia – Coluna",desc:"Em análise pela operadora",status:"analise"},
+    {titulo:"Ortopedia – Ombro",desc:"Em análise pela operadora",status:"analise"},
+    {titulo:"Ortopedia – Quadril",desc:"Em análise pela operadora",status:"analise"},
+  ]},
+  {nome:"CNU",demandas:[
+    {titulo:"Extensão Serviços – IBR",desc:"Extensão de serviços para a unidade IBR em andamento",status:"andamento"},
+    {titulo:"Pacote de Endometriose",desc:"Proposta enviada, aguardando posição",status:"proposta"},
+    {titulo:"Aditivo – Cabeça e Pescoço",desc:"Aguardando emissão do aditivo pela CNU",status:"aguardando"},
+  ]},
+  {nome:"Planserv",demandas:[
+    {titulo:"Renovação de Edital",desc:"Processo de renovação do edital em andamento",status:"andamento"},
+  ]},
+  {nome:"Unafisco",demandas:[
+    {titulo:"Recontratualização",desc:"Processo de recontratualização do contrato em andamento",status:"andamento"},
+  ]},
+  {nome:"CASSEB",demandas:[
+    {titulo:"Extensão Especialidades",desc:"Extensão para cirurgia torácica e neurocirurgia",status:"andamento"},
+  ]},
+  {nome:"CAMED",demandas:[
+    {titulo:"Pacotes de DIU",desc:"Negociação dos pacotes em andamento",status:"negociacao"},
+  ]},
+];
+
+let filtroAtivo = "todos";
+let dropdownTarget = null;
+
+// ── CONTADORES ────────────────────────────────────────────
+function contarStatus(k){ return dados.flatMap(c=>c.demandas).filter(d=>d.status===k).length }
+
+function atualizarContadores(){
+  const total = dados.flatMap(c=>c.demandas).length;
+  document.getElementById("cnt-total").textContent = total;
+  document.getElementById("cnt-conv").textContent  = dados.length;
+  document.getElementById("cnt-agd").textContent   = contarStatus("aguardando");
+  document.getElementById("cnt-conc").textContent  = contarStatus("concluido");
+}
+
+// ── RESUMO STRIP ──────────────────────────────────────────
+function renderResumo(){
+  const total = dados.flatMap(c=>c.demandas).length;
+  const cards = [
+    {key:"todos",label:"Todos",cls:"r-all",num:total},
+    {key:"aguardando",label:"Aguardando",cls:"r-agd",num:contarStatus("aguardando")},
+    {key:"negociacao",label:"Em negociação",cls:"r-neg",num:contarStatus("negociacao")},
+    {key:"proposta",label:"Proposta enviada",cls:"r-prop",num:contarStatus("proposta")},
+    {key:"analise",label:"Em análise",cls:"r-ana",num:contarStatus("analise")},
+    {key:"andamento",label:"Em andamento",cls:"r-and",num:contarStatus("andamento")},
+    {key:"concluido",label:"Concluído",cls:"r-conc",num:contarStatus("concluido")},
+    {key:"reuniao",label:"Reunião agendada",cls:"r-reu",num:contarStatus("reuniao")},
+  ];
+  document.getElementById("resumo-strip").innerHTML = cards.map(c=>`
+    <div class="r-card ${c.cls} ${filtroAtivo===c.key?'ativo':''}" onclick="filtrar('${c.key}')">
+      <div class="r-num">${c.num}</div><div class="r-label">${c.label}</div>
+    </div>`).join("");
+}
+
+// ── FILTROS ───────────────────────────────────────────────
+function renderFiltros(){
+  const btns=[{key:"todos",label:"Todos os status",cor:"#1F4E79"},
+    ...Object.entries(STATUS).map(([k,v])=>({key:k,label:v.label,cor:v.cor}))];
+  document.getElementById("filtros").innerHTML = btns.map(b=>`
+    <button class="f-btn ${filtroAtivo===b.key?'ativo':''}" onclick="filtrar('${b.key}')">
+      ${b.key!=="todos"?`<span class="dot" style="background:${b.cor}"></span>`:""}${b.label}
+    </button>`).join("");
+}
+
+function filtrar(key){ filtroAtivo=key; renderTudo() }
+
+// ── GRID ──────────────────────────────────────────────────
+function renderGrid(){
+  const busca = document.getElementById("busca").value.toLowerCase().trim();
+  const grid  = document.getElementById("grid");
+  const nenhum= document.getElementById("nenhum");
+  let html="", visiveis=0;
+
+  dados.forEach((conv,ci)=>{
+    let dems = conv.demandas;
+    if(filtroAtivo!=="todos") dems=dems.filter(d=>d.status===filtroAtivo);
+    if(busca) dems=dems.filter(d=>
+      conv.nome.toLowerCase().includes(busca)||
+      d.titulo.toLowerCase().includes(busca)||
+      d.desc.toLowerCase().includes(busca));
+    if(!dems.length) return;
+    visiveis++;
+
+    const icone = ICONES[conv.nome]||"🏢";
+    const itens = dems.map((d,di)=>{
+      const realDi = conv.demandas.indexOf(d);
+      const s = STATUS[d.status];
+      return `
+        <div class="demanda-item">
+          <div class="d-linha ${s.linha}"></div>
+          <div class="d-corpo">
+            <input class="d-titulo" value="${esc(d.titulo)}" 
+              onchange="editarCampo(${ci},${realDi},'titulo',this.value)"
+              title="Clique para editar o título">
+            <textarea class="d-desc" rows="2"
+              onchange="editarCampo(${ci},${realDi},'desc',this.value)"
+              title="Clique para editar a descrição">${esc(d.desc)}</textarea>
+            <div class="d-status-wrap">
+              <button class="d-badge ${s.cls}" 
+                onclick="abrirDropdown(event,${ci},${realDi})"
+                title="Clique para mudar o status">${s.label} ▾</button>
+            </div>
+          </div>
+          <button class="btn-del" onclick="deletarDemanda(${ci},${realDi})" title="Remover demanda">×</button>
+        </div>`;
+    }).join("");
+
+    html+=`
+      <div class="card">
+        <div class="card-header">
+          <div class="conv-icon">${icone}</div>
+          <div class="conv-nome">${conv.nome}</div>
+          <span class="conv-qtd">${dems.length} demanda${dems.length>1?'s':''}</span>
+          <button class="btn-add-demanda" onclick="abrirModalDemanda(${ci})" title="Adicionar demanda">+</button>
+        </div>
+        <div class="card-body">${itens}</div>
+      </div>`;
+  });
+
+  grid.innerHTML = html;
+  nenhum.style.display = visiveis===0?"block":"none";
+
+  // Ajustar altura dos textareas
+  document.querySelectorAll('.d-desc').forEach(ta=>{
+    ta.style.height='auto';
+    ta.style.height=ta.scrollHeight+'px';
+    ta.addEventListener('input',function(){this.style.height='auto';this.style.height=this.scrollHeight+'px'});
+  });
+}
+
+function renderTudo(){ atualizarContadores(); renderResumo(); renderFiltros(); renderGrid() }
+
+function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;") }
+
+// ── EDIÇÃO INLINE ─────────────────────────────────────────
+function editarCampo(ci, di, campo, valor){
+  dados[ci].demandas[di][campo] = valor;
+  atualizarContadores();
+  renderResumo();
+}
+
+// ── DROPDOWN STATUS ───────────────────────────────────────
+function abrirDropdown(e, ci, di){
+  e.stopPropagation();
+  dropdownTarget = {ci, di};
+  const dd = document.getElementById("status-dropdown");
+  const opts = Object.entries(STATUS).map(([k,v])=>`
+    <button class="status-opt" onclick="selecionarStatus('${k}')">
+      <span class="opt-badge ${v.cls}">${v.label}</span>
+    </button>`).join("");
+  document.getElementById("status-opts").innerHTML = opts;
+
+  const rect = e.target.getBoundingClientRect();
+  dd.style.top  = (rect.bottom + window.scrollY + 4)+"px";
+  dd.style.left = rect.left+"px";
+  dd.classList.add("aberto");
+}
+
+function selecionarStatus(key){
+  if(!dropdownTarget) return;
+  const {ci,di} = dropdownTarget;
+  dados[ci].demandas[di].status = key;
+  fecharDropdown();
+  renderTudo();
+}
+
+function fecharDropdown(){
+  document.getElementById("status-dropdown").classList.remove("aberto");
+  dropdownTarget = null;
+}
+
+document.addEventListener("click", e=>{
+  if(!e.target.closest(".status-dropdown") && !e.target.classList.contains("d-badge")) fecharDropdown();
+});
+
+// ── DELETAR DEMANDA ───────────────────────────────────────
+function deletarDemanda(ci, di){
+  if(!confirm("Remover esta demanda?")) return;
+  dados[ci].demandas.splice(di,1);
+  if(dados[ci].demandas.length===0) dados.splice(ci,1);
+  renderTudo();
+}
+
+// ── MODAL NOVO CONVÊNIO ───────────────────────────────────
+function abrirModalConvenio(){
+  document.getElementById("modal-titulo").textContent = "Novo convênio";
+  document.getElementById("modal-body").innerHTML = `
+    <label>Nome do convênio</label>
+    <input id="m-nome" placeholder="Ex: Unimed" autocomplete="off">
+    <label>Ícone (emoji)</label>
+    <input id="m-icone" placeholder="🏥" maxlength="4" style="width:80px">`;
+  document.getElementById("btn-confirmar").onclick = confirmarConvenio;
+  document.getElementById("overlay").classList.add("aberto");
+  setTimeout(()=>document.getElementById("m-nome").focus(),100);
+}
+
+function confirmarConvenio(){
+  const nome  = document.getElementById("m-nome").value.trim();
+  const icone = document.getElementById("m-icone").value.trim() || "🏢";
+  if(!nome) return alert("Digite o nome do convênio.");
+  ICONES[nome] = icone;
+  dados.push({nome, demandas:[{titulo:"Nova demanda",desc:"Descreva a situação",status:"andamento"}]});
+  fecharModal();
+  renderTudo();
+}
+
+// ── MODAL NOVA DEMANDA ────────────────────────────────────
+function abrirModalDemanda(ci){
+  document.getElementById("modal-titulo").textContent = `Nova demanda — ${dados[ci].nome}`;
+  const opts = Object.entries(STATUS).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join("");
+  document.getElementById("modal-body").innerHTML = `
+    <label>Título da demanda</label>
+    <input id="m-titulo" placeholder="Ex: Pacote de Ortopedia" autocomplete="off">
+    <label>Descrição</label>
+    <input id="m-desc" placeholder="Ex: Proposta enviada em 10/06">
+    <label>Status inicial</label>
+    <select id="m-status">${opts}</select>`;
+  document.getElementById("btn-confirmar").onclick = ()=>confirmarDemanda(ci);
+  document.getElementById("overlay").classList.add("aberto");
+  setTimeout(()=>document.getElementById("m-titulo").focus(),100);
+}
+
+function confirmarDemanda(ci){
+  const titulo = document.getElementById("m-titulo").value.trim();
+  const desc   = document.getElementById("m-desc").value.trim();
+  const status = document.getElementById("m-status").value;
+  if(!titulo) return alert("Digite o título da demanda.");
+  dados[ci].demandas.push({titulo, desc: desc||"–", status});
+  fecharModal();
+  renderTudo();
+}
+
+function fecharModal(){
+  document.getElementById("overlay").classList.remove("aberto");
+}
+document.getElementById("overlay").addEventListener("click", e=>{ if(e.target===e.currentTarget) fecharModal() });
+
+// ── EXPORTAR HTML ─────────────────────────────────────────
+function exportarHTML(){
+  // Captura o estado atual dos campos editados no DOM antes de exportar
+  document.querySelectorAll('.d-titulo').forEach(el=>{
+    const ci = parseInt(el.closest('.card') ? getConvIndex(el) : -1);
+  });
+
+  const dadosJSON = JSON.stringify(dados);
+  const dataHoje  = new Date().toLocaleDateString('pt-BR');
+  const htmlAtual = document.documentElement.outerHTML;
+
+  // Substitui o array de dados pelo estado atual
+  const novoHTML = htmlAtual.replace(
+    /let dados = \[[\s\S]*?\];\n\n/,
+    `let dados = ${dadosJSON};\n\n`
+  ).replace(
+    /Acompanhamento dos processos em andamento · [^<]*/,
+    `Acompanhamento dos processos em andamento · Atualizado em ${dataHoje}`
+  );
+
+  const blob = new Blob([novoHTML], {type:"text/html;charset=utf-8"});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href = url;
+  a.download = `Painel_Demandas_${dataHoje.replace(/\//g,"-")}.html`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── INIT ──────────────────────────────────────────────────
+renderTudo();
+</script>
+</body>
+</html>
