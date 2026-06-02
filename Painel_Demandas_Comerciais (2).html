@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de Demandas Comerciais</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --azul:     #1F4E79;
+    --azul-mid: #2E75B6;
+    --azul-clr: #5B9BD5;
+    --laranja:  #ED7D31;
+    --verde:    #639922;
+    --roxo:     #7C3AED;
+    --cinza:    #888780;
+    --bg:       #F0F4F8;
+    --card:     #FFFFFF;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: #1a1a2e;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--azul);
+    padding: 28px 40px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 240px; height: 240px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; left: 30%;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.03);
+  }
+  .header-top { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+  header h1 span { color: #7EC8E3; }
+  header p { color: rgba(255,255,255,0.6); font-size: 13px; margin-top: 6px; }
+  .header-stats { display: flex; gap: 12px; flex-wrap: wrap; }
+  .hstat {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 10px 18px;
+    text-align: center;
+    min-width: 80px;
+  }
+  .hstat-num { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: #fff; }
+  .hstat-label { font-size: 10px; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+  /* ── FILTROS ── */
+  .filtros-wrap { padding: 20px 40px 0; }
+  .filtros-titulo { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .filtros { display: flex; gap: 8px; flex-wrap: wrap; }
+  .f-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 14px;
+    border-radius: 30px;
+    border: 1.5px solid #D1D5DB;
+    background: #fff;
+    color: #555;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.18s;
+    font-family: 'Inter', sans-serif;
+  }
+  .f-btn:hover { border-color: var(--azul-mid); color: var(--azul); background: #EEF4FB; }
+  .f-btn.ativo { background: var(--azul); color: #fff; border-color: var(--azul); }
+  .f-btn .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── BARRA DE BUSCA ── */
+  .busca-wrap { padding: 14px 40px 0; }
+  .busca {
+    width: 100%; max-width: 360px;
+    padding: 9px 16px 9px 38px;
+    border: 1.5px solid #D1D5DB;
+    border-radius: 30px;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 12px center;
+    outline: none;
+    transition: border-color 0.18s;
+  }
+  .busca:focus { border-color: var(--azul-mid); }
+
+  /* ── GRID ── */
+  .grid-wrap { padding: 20px 40px 40px; }
+  .nenhum { text-align: center; padding: 60px 20px; color: #aaa; font-size: 15px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    border: 1px solid #E5EAF0;
+    overflow: hidden;
+    transition: transform 0.18s, box-shadow 0.18s;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(31,78,121,0.1); }
+
+  .card-header {
+    padding: 14px 16px 12px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid #F0F4F8;
+    background: #FAFBFC;
+  }
+  .conv-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--azul);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 15px;
+  }
+  .conv-info { flex: 1; min-width: 0; }
+  .conv-nome { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: #1a1a2e; }
+  .conv-qtd {
+    font-size: 10px; color: #888;
+    background: #EEF2F7;
+    padding: 2px 8px; border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .card-body { padding: 10px 14px 12px; }
+
+  .demanda-item {
+    display: flex; gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid #F3F4F6;
+    align-items: flex-start;
+  }
+  .demanda-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+  .d-linha { width: 3px; border-radius: 2px; flex-shrink: 0; margin-top: 4px; align-self: stretch; min-height: 30px; }
+  .d-corpo { flex: 1; min-width: 0; }
+  .d-titulo { font-size: 12px; font-weight: 600; color: #1a1a2e; line-height: 1.4; }
+  .d-desc { font-size: 11px; color: #666; margin-top: 3px; line-height: 1.4; }
+  .d-badge {
+    display: inline-block; margin-top: 5px;
+    font-size: 10px; font-weight: 600;
+    padding: 3px 9px; border-radius: 20px;
+    letter-spacing: 0.2px;
+  }
+
+  /* ── STATUS CORES ── */
+  .s-aguardando  { background: #FCE4D6; color: #833C00; }
+  .s-negociacao  { background: #DDEBF7; color: #185FA5; }
+  .s-proposta    { background: #E6F1FB; color: #0C447C; }
+  .s-analise     { background: #F2F2F2; color: #444441; }
+  .s-andamento   { background: #DEEAF1; color: #1F4E79; }
+  .s-concluido   { background: #EAF3DE; color: #27500A; }
+  .s-reuniao     { background: #EDE9FE; color: #4C1D95; }
+
+  .linha-aguardando  { background: #ED7D31; }
+  .linha-negociacao  { background: #2E75B6; }
+  .linha-proposta    { background: #5B9BD5; }
+  .linha-analise     { background: #9CA3AF; }
+  .linha-andamento   { background: #3B82F6; }
+  .linha-concluido   { background: #639922; }
+  .linha-reuniao     { background: #7C3AED; }
+
+  /* ── RESUMO CONTADOR ── */
+  .resumo-strip {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    padding: 16px 40px 0;
+  }
+  .r-card {
+    flex: 1; min-width: 110px;
+    border-radius: 12px;
+    padding: 12px 14px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.15s;
+    border: 1.5px solid transparent;
+  }
+  .r-card:hover { transform: translateY(-2px); }
+  .r-card.ativo { border-color: rgba(0,0,0,0.15); }
+  .r-num { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; line-height: 1; }
+  .r-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 4px; opacity: 0.75; }
+  .r-all   { background: #1F4E79; color: #fff; }
+  .r-agd   { background: #FCE4D6; color: #833C00; }
+  .r-neg   { background: #DDEBF7; color: #185FA5; }
+  .r-prop  { background: #E6F1FB; color: #0C447C; }
+  .r-ana   { background: #F2F2F2; color: #444441; }
+  .r-and   { background: #DEEAF1; color: #1F4E79; }
+  .r-conc  { background: #EAF3DE; color: #27500A; }
+  .r-reu   { background: #EDE9FE; color: #4C1D95; }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 11px;
+    color: #aaa;
+    border-top: 1px solid #E5EAF0;
+    background: #fff;
+  }
+
+  @media (max-width: 600px) {
+    header, .filtros-wrap, .busca-wrap, .grid-wrap, .resumo-strip { padding-left: 16px; padding-right: 16px; }
+    header h1 { font-size: 20px; }
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div>
+      <h1>Painel de <span>Demandas</span><br>Comerciais</h1>
+      <p>Acompanhamento dos processos em andamento · Junho 2025</p>
+    </div>
+    <div class="header-stats">
+      <div class="hstat"><div class="hstat-num" id="cnt-total">34</div><div class="hstat-label">Demandas</div></div>
+      <div class="hstat"><div class="hstat-num" id="cnt-conv">16</div><div class="hstat-label">Convênios</div></div>
+      <div class="hstat"><div class="hstat-num" id="cnt-agd">—</div><div class="hstat-label">Aguardando</div></div>
+      <div class="hstat"><div class="hstat-num" id="cnt-conc">—</div><div class="hstat-label">Concluídas</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="resumo-strip" id="resumo-strip"></div>
+
+<div class="busca-wrap">
+  <input class="busca" type="text" placeholder="Buscar convênio ou demanda..." id="busca" oninput="renderGrid()">
+</div>
+
+<div class="filtros-wrap">
+  <div class="filtros-titulo">Filtrar por status</div>
+  <div class="filtros" id="filtros"></div>
+</div>
+
+<div class="grid-wrap">
+  <div class="grid" id="grid"></div>
+  <div class="nenhum" id="nenhum" style="display:none">Nenhuma demanda encontrada para este filtro.</div>
+</div>
+
+<footer>Painel gerado em junho/2025 · Demandas Comerciais em Andamento</footer>
+
+<script>
+const STATUS = {
+  aguardando: { label: "Aguardando operadora", cls: "s-aguardando", linha: "linha-aguardando", cor: "#ED7D31" },
+  negociacao: { label: "Em negociação",         cls: "s-negociacao",  linha: "linha-negociacao",  cor: "#2E75B6" },
+  proposta:   { label: "Proposta enviada",       cls: "s-proposta",   linha: "linha-proposta",    cor: "#5B9BD5" },
+  analise:    { label: "Em análise",             cls: "s-analise",    linha: "linha-analise",     cor: "#9CA3AF" },
+  andamento:  { label: "Em andamento",           cls: "s-andamento",  linha: "linha-andamento",   cor: "#3B82F6" },
+  concluido:  { label: "Concluído",              cls: "s-concluido",  linha: "linha-concluido",   cor: "#639922" },
+  reuniao:    { label: "Reunião agendada",       cls: "s-reuniao",    linha: "linha-reuniao",     cor: "#7C3AED" },
+};
+
+const ICONES = {
+  "Demandas Gerais": "🏥",
+  "APUB": "📋",
+  "Bradesco": "🏦",
+  "CASSI": "🩺",
+  "Sulamérica": "💊",
+  "AMIL": "❤️",
+  "Marinha": "⚓",
+  "Banco Central / Pro Social": "🏛️",
+  "Select Saúde": "✅",
+  "Saúde Petrobras": "🔷",
+  "Saúde Caixa": "🏠",
+  "CNU": "🪪",
+  "Planserv": "📜",
+  "Unafisco": "⚖️",
+  "CASSEB": "🫁",
+  "CAMED": "💉",
+};
+
+const dados = [
+  { nome: "Demandas Gerais", demandas: [
+    { titulo: "Pacotes de Endometriose",     desc: "Propostas enviadas e em acompanhamento junto às operadoras",          status: "proposta"   },
+    { titulo: "Implantes Hormonais",          desc: "Proposta confeccionada — reunião agendada p/ 28/05 c/ equipe",        status: "reuniao"    },
+    { titulo: "Pacotes de Cabeça e Pescoço", desc: "Propostas encaminhadas e em acompanhamento",                          status: "proposta"   },
+  ]},
+  { nome: "APUB", demandas: [
+    { titulo: "Recontratualização",           desc: "Análise da minuta contratual em andamento",                           status: "analise"    },
+  ]},
+  { nome: "Bradesco", demandas: [
+    { titulo: "Cirurgia Endoscópica da Coluna", desc: "Aguardando emissão do aditivo pela operadora",                     status: "aguardando" },
+    { titulo: "Reajuste Book HCR e HSA",      desc: "Aguardando aditivo de reajuste",                                     status: "aguardando" },
+    { titulo: "Especialidades TEA – IBR",     desc: "Aguardando aditivo (Fonoaudiologia e Psicopedagogia)",                status: "aguardando" },
+    { titulo: "Pacote de Endometriose",       desc: "Em tratativa ativa com a operadora",                                  status: "negociacao" },
+    { titulo: "Reajuste 2026",                desc: "Tratativas em andamento para o próximo ciclo",                        status: "negociacao" },
+  ]},
+  { nome: "CASSI", demandas: [
+    { titulo: "Pacote de Endometriose",       desc: "Em tratativa ativa com a operadora",                                  status: "negociacao" },
+    { titulo: "Pacote de Cabeça e Pescoço",  desc: "Em tratativa com a operadora",                                        status: "negociacao" },
+    { titulo: "Extensão – Emergência Cirurgia Geral", desc: "Proposta de extensão da emergência enviada",                 status: "proposta"   },
+    { titulo: "Extensão LEM – IBR",          desc: "Proposta de extensão para o LEM–IBR enviada",                         status: "proposta"   },
+  ]},
+  { nome: "Sulamérica", demandas: [
+    { titulo: "Histeroscopia Cirúrgica e Diagnóstica", desc: "Avaliação dos pacotes em andamento pela equipe",            status: "analise"    },
+    { titulo: "Redução Exames Laboratoriais (SAS)", desc: "Análise da redução solicitada pela SAS",                       status: "analise"    },
+  ]},
+  { nome: "AMIL", demandas: [
+    { titulo: "HM Diferenciado – Endometriose/C&P", desc: "Proposta de honorário médico diferenciado enviada",            status: "proposta"   },
+    { titulo: "Pacote Endoscopia e Colonoscopia", desc: "Proposta enviada, aguardando análise",                           status: "proposta"   },
+    { titulo: "Negociação de Reajuste",       desc: "Tratativas de reajuste em andamento",                                 status: "negociacao" },
+    { titulo: "Pacote de Emergência",         desc: "Aguardando retorno sobre proposta enviada",                           status: "aguardando" },
+  ]},
+  { nome: "Marinha", demandas: [
+    { titulo: "Composição de Edital",         desc: "Urologia, Ginecologia, Obstetrícia, Endoscopia, Colonoscopia, Diárias e Taxas", status: "proposta" },
+  ]},
+  { nome: "Banco Central / Pro Social", demandas: [
+    { titulo: "Credenciamento IBR",           desc: "Processo de credenciamento em andamento",                             status: "andamento"  },
+  ]},
+  { nome: "Select Saúde", demandas: [
+    { titulo: "Credenciamento IBR",           desc: "Aguardando recebimento do contrato de credenciamento",                status: "aguardando" },
+  ]},
+  { nome: "Saúde Petrobras", demandas: [
+    { titulo: "Pacotes de Ortopedia",         desc: "Proposta enviada, aguardando retorno da operadora",                   status: "proposta"   },
+  ]},
+  { nome: "Saúde Caixa", demandas: [
+    { titulo: "Ortopedia – Joelho",           desc: "Negociação finalizada com sucesso ✓",                                 status: "concluido"  },
+    { titulo: "Ortopedia – Coluna",           desc: "Em análise pela operadora",                                           status: "analise"    },
+    { titulo: "Ortopedia – Ombro",            desc: "Em análise pela operadora",                                           status: "analise"    },
+    { titulo: "Ortopedia – Quadril",          desc: "Em análise pela operadora",                                           status: "analise"    },
+  ]},
+  { nome: "CNU", demandas: [
+    { titulo: "Extensão Serviços – IBR",      desc: "Extensão de serviços para a unidade IBR em andamento",                status: "andamento"  },
+    { titulo: "Pacote de Endometriose",       desc: "Proposta enviada, aguardando posição",                                status: "proposta"   },
+    { titulo: "Aditivo – Cabeça e Pescoço",  desc: "Aguardando emissão do aditivo pela CNU",                              status: "aguardando" },
+  ]},
+  { nome: "Planserv", demandas: [
+    { titulo: "Renovação de Edital",          desc: "Processo de renovação do edital em andamento",                        status: "andamento"  },
+  ]},
+  { nome: "Unafisco", demandas: [
+    { titulo: "Recontratualização",           desc: "Processo de recontratualização do contrato em andamento",             status: "andamento"  },
+  ]},
+  { nome: "CASSEB", demandas: [
+    { titulo: "Extensão Especialidades",      desc: "Extensão para cirurgia torácica e neurocirurgia",                     status: "andamento"  },
+  ]},
+  { nome: "CAMED", demandas: [
+    { titulo: "Pacotes de DIU",               desc: "Negociação dos pacotes em andamento",                                 status: "negociacao" },
+  ]},
+];
+
+let filtroAtivo = "todos";
+
+function contarStatus(chave) {
+  return dados.flatMap(c => c.demandas).filter(d => d.status === chave).length;
+}
+
+function renderResumo() {
+  const total = dados.flatMap(c => c.demandas).length;
+  document.getElementById("cnt-total").textContent = total;
+  document.getElementById("cnt-conv").textContent  = dados.length;
+  document.getElementById("cnt-agd").textContent   = contarStatus("aguardando");
+  document.getElementById("cnt-conc").textContent  = contarStatus("concluido");
+
+  const strip = document.getElementById("resumo-strip");
+  const cards = [
+    { key:"todos",      label:"Todos",              cls:"r-all",  num: total },
+    { key:"aguardando", label:"Aguardando",          cls:"r-agd",  num: contarStatus("aguardando") },
+    { key:"negociacao", label:"Em negociação",       cls:"r-neg",  num: contarStatus("negociacao") },
+    { key:"proposta",   label:"Proposta enviada",    cls:"r-prop", num: contarStatus("proposta")   },
+    { key:"analise",    label:"Em análise",          cls:"r-ana",  num: contarStatus("analise")    },
+    { key:"andamento",  label:"Em andamento",        cls:"r-and",  num: contarStatus("andamento")  },
+    { key:"concluido",  label:"Concluído",           cls:"r-conc", num: contarStatus("concluido")  },
+    { key:"reuniao",    label:"Reunião agendada",    cls:"r-reu",  num: contarStatus("reuniao")    },
+  ];
+  strip.innerHTML = cards.map(c => `
+    <div class="r-card ${c.cls} ${filtroAtivo===c.key?'ativo':''}" onclick="filtrar('${c.key}')">
+      <div class="r-num">${c.num}</div>
+      <div class="r-label">${c.label}</div>
+    </div>
+  `).join("");
+}
+
+function renderFiltros() {
+  const el = document.getElementById("filtros");
+  const btns = [{ key:"todos", label:"Todos os status", cor:"#1F4E79" },
+    ...Object.entries(STATUS).map(([k,v]) => ({ key:k, label:v.label, cor:v.cor }))];
+  el.innerHTML = btns.map(b => `
+    <button class="f-btn ${filtroAtivo===b.key?'ativo':''}" onclick="filtrar('${b.key}')">
+      ${b.key!=="todos" ? `<span class="dot" style="background:${b.cor}"></span>` : ""}
+      ${b.label}
+    </button>
+  `).join("");
+}
+
+function renderGrid() {
+  const busca = document.getElementById("busca").value.toLowerCase().trim();
+  const grid  = document.getElementById("grid");
+  const nenhum = document.getElementById("nenhum");
+
+  let html = "";
+  let visiveis = 0;
+
+  dados.forEach(conv => {
+    let demandas = conv.demandas;
+
+    if (filtroAtivo !== "todos") demandas = demandas.filter(d => d.status === filtroAtivo);
+    if (busca) demandas = demandas.filter(d =>
+      conv.nome.toLowerCase().includes(busca) ||
+      d.titulo.toLowerCase().includes(busca) ||
+      d.desc.toLowerCase().includes(busca)
+    );
+    if (!demandas.length) return;
+    visiveis++;
+
+    const itens = demandas.map(d => {
+      const s = STATUS[d.status];
+      return `
+        <div class="demanda-item">
+          <div class="d-linha ${s.linha}"></div>
+          <div class="d-corpo">
+            <div class="d-titulo">${d.titulo}</div>
+            <div class="d-desc">${d.desc}</div>
+            <span class="d-badge ${s.cls}">${s.label}</span>
+          </div>
+        </div>`;
+    }).join("");
+
+    const icone = ICONES[conv.nome] || "🏢";
+    html += `
+      <div class="card">
+        <div class="card-header">
+          <div class="conv-icon">${icone}</div>
+          <div class="conv-info">
+            <div class="conv-nome">${conv.nome}</div>
+          </div>
+          <span class="conv-qtd">${demandas.length} demanda${demandas.length>1?'s':''}</span>
+        </div>
+        <div class="card-body">${itens}</div>
+      </div>`;
+  });
+
+  grid.innerHTML = html;
+  nenhum.style.display = visiveis === 0 ? "block" : "none";
+}
+
+function filtrar(key) {
+  filtroAtivo = key;
+  renderResumo();
+  renderFiltros();
+  renderGrid();
+}
+
+renderResumo();
+renderFiltros();
+renderGrid();
+</script>
+</body>
+</html>
