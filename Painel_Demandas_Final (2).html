@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de Demandas Comerciais</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--azul:#1F4E79;--azul-mid:#2E75B6;--bg:#F0F4F8;--card:#fff}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:#1a1a2e;min-height:100vh}
+
+header{background:var(--azul);padding:24px 40px 20px;overflow:hidden;position:relative}
+header::before{content:'';position:absolute;top:-60px;right:-60px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,0.04)}
+.header-top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;position:relative}
+header h1{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:#fff;letter-spacing:-0.5px;line-height:1.2}
+header h1 span{color:#7EC8E3}
+header p{color:rgba(255,255,255,0.55);font-size:12px;margin-top:5px}
+.header-stats{display:flex;gap:10px;flex-wrap:wrap}
+.hstat{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:9px 16px;text-align:center;min-width:76px}
+.hstat-num{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#fff}
+.hstat-label{font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.5px;margin-top:1px}
+
+.toolbar{background:#fff;border-bottom:1px solid #E5EAF0;padding:10px 40px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;top:0;z-index:100;box-shadow:0 1px 8px rgba(0,0,0,0.05)}
+.sync-badge{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:#639922}
+.sync-dot.salvando{background:#ED7D31;animation:blink 0.8s infinite}
+.sync-dot.erro{background:#DC2626}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+.sync-txt{color:#639922}
+.sync-txt.salvando{color:#ED7D31}
+.sync-txt.erro{color:#DC2626}
+.btn-toolbar{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:30px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s;border:1.5px solid #D1D5DB;background:#fff;color:#444}
+.btn-toolbar:hover{border-color:var(--azul-mid);color:var(--azul);background:#EEF4FB}
+.btn-refresh{border-color:#C3D9F0;color:var(--azul-mid);margin-left:auto}
+.btn-refresh:hover{background:#EEF4FB;border-color:var(--azul-mid)}
+
+.resumo-strip{display:flex;gap:10px;flex-wrap:wrap;padding:16px 40px 0}
+.r-card{flex:1;min-width:95px;border-radius:12px;padding:11px 13px;cursor:pointer;transition:transform 0.15s;border:2px solid transparent}
+.r-card:hover{transform:translateY(-2px)}
+.r-card.ativo{border-color:rgba(0,0,0,0.18)}
+.r-num{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;line-height:1}
+.r-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.3px;margin-top:3px;opacity:0.75}
+.r-all{background:#1F4E79;color:#fff}.r-agd{background:#FCE4D6;color:#833C00}.r-neg{background:#DDEBF7;color:#185FA5}
+.r-prop{background:#E6F1FB;color:#0C447C}.r-ana{background:#F2F2F2;color:#444}.r-and{background:#DEEAF1;color:#1F4E79}
+.r-conc{background:#EAF3DE;color:#27500A}.r-reu{background:#EDE9FE;color:#4C1D95}
+
+.busca-wrap{padding:14px 40px 0}
+.busca{width:100%;max-width:360px;padding:9px 16px 9px 38px;border:1.5px solid #D1D5DB;border-radius:30px;font-size:13px;font-family:'Inter',sans-serif;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 12px center;outline:none;transition:border-color 0.15s}
+.busca:focus{border-color:var(--azul-mid)}
+
+.filtros-wrap{padding:12px 40px 0}
+.filtros-titulo{font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.filtros{display:flex;gap:8px;flex-wrap:wrap}
+.f-btn{display:flex;align-items:center;gap:6px;padding:6px 13px;border-radius:30px;border:1.5px solid #D1D5DB;background:#fff;color:#555;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.15s;font-family:'Inter',sans-serif}
+.f-btn:hover{border-color:var(--azul-mid);color:var(--azul);background:#EEF4FB}
+.f-btn.ativo{background:var(--azul);color:#fff;border-color:var(--azul)}
+.f-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+.grid-wrap{padding:18px 40px 40px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.nenhum{text-align:center;padding:60px;color:#bbb;font-size:15px}
+
+.loading-wrap{text-align:center;padding:60px 20px}
+.loading-spinner{width:36px;height:36px;border:3px solid #E5EAF0;border-top-color:var(--azul-mid);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-size:13px;color:#999}
+
+.card{background:#fff;border-radius:16px;border:1px solid #E5EAF0;overflow:hidden;transition:box-shadow 0.18s}
+.card:hover{box-shadow:0 4px 20px rgba(31,78,121,0.08)}
+.card-header{padding:13px 15px 11px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #F0F4F8;background:#FAFBFC}
+.conv-icon{width:34px;height:34px;border-radius:10px;background:var(--azul);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+.conv-nome{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#1a1a2e;flex:1}
+.conv-qtd{font-size:10px;color:#888;background:#EEF2F7;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.btn-icon{width:26px;height:26px;border-radius:8px;border:1.5px solid #E5EAF0;background:#fff;color:#888;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0}
+.btn-icon:hover{border-color:var(--azul-mid);color:var(--azul);background:#EEF4FB}
+
+.card-body{padding:6px 0}
+.demanda-bloco{border-bottom:1px solid #F3F4F6}
+.demanda-bloco:last-child{border-bottom:none}
+.demanda-topo{display:flex;gap:10px;padding:10px 14px 8px;align-items:flex-start}
+.d-linha{width:3px;min-height:32px;border-radius:2px;flex-shrink:0;margin-top:3px;align-self:stretch}
+.d-main{flex:1;min-width:0}
+.d-titulo-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.d-titulo{font-size:12px;font-weight:600;color:#1a1a2e;line-height:1.4;flex:1;cursor:text;padding:1px 3px;border-radius:4px;border:1px solid transparent;outline:none;background:transparent;font-family:'Inter',sans-serif}
+.d-titulo:hover{border-color:#E0E7FF;background:#F8FAFF}
+.d-titulo:focus{border-color:var(--azul-mid);background:#F8FAFF}
+.d-badge{font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;cursor:pointer;border:none;font-family:'Inter',sans-serif;white-space:nowrap;flex-shrink:0;transition:opacity 0.15s}
+.d-badge:hover{opacity:0.75}
+.d-situacao{font-size:11px;color:#777;margin-top:3px;line-height:1.4;padding:1px 3px;border-radius:4px;border:1px solid transparent;outline:none;background:transparent;width:100%;font-family:'Inter',sans-serif;resize:none;overflow:hidden;cursor:text}
+.d-situacao:hover{border-color:#E0E7FF;background:#F8FAFF}
+.d-situacao:focus{border-color:var(--azul-mid);background:#F8FAFF}
+.d-acoes-row{display:flex;align-items:center;gap:6px;margin-top:6px}
+.btn-update{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:4px 10px;border-radius:20px;border:1.5px solid #D1D5DB;background:#fff;color:#555;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s}
+.btn-update:hover{border-color:#2E75B6;color:#2E75B6;background:#EEF4FB}
+.btn-del-d{font-size:13px;color:#DDD;background:none;border:none;cursor:pointer;padding:2px 4px;border-radius:4px;transition:all 0.15s;margin-left:auto}
+.btn-del-d:hover{color:#DC2626;background:#FEE2E2}
+
+.historico{background:#F8FAFF;border-top:1px solid #EEF2FF;padding:0 14px 0 27px;max-height:0;overflow:hidden;transition:max-height 0.35s ease,padding 0.35s}
+.historico.aberto{max-height:800px;padding:10px 14px 12px 27px}
+.hist-titulo{font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px}
+.hist-vazio{font-size:11px;color:#bbb;font-style:italic}
+.hist-item{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}
+.hist-item:last-child{margin-bottom:0}
+.hist-lv{display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding-top:3px}
+.hist-dot{width:8px;height:8px;border-radius:50%;background:var(--azul-mid);flex-shrink:0}
+.hist-trail{width:1px;background:#D1D5DB;flex:1;min-height:14px;margin-top:3px}
+.hist-corpo{flex:1;min-width:0}
+.hist-data{font-size:10px;font-weight:600;color:#999;margin-bottom:3px}
+.hist-texto{font-size:11px;color:#444;line-height:1.5;background:#fff;border:1px solid #E5EAF0;border-radius:8px;padding:7px 10px}
+.hist-del{font-size:12px;color:#DDD;background:none;border:none;cursor:pointer;padding:2px;flex-shrink:0;transition:color 0.15s;margin-top:2px}
+.hist-del:hover{color:#DC2626}
+
+.form-update{background:#EEF4FB;border-top:1px solid #D6E4F0;padding:0 14px;max-height:0;overflow:hidden;transition:max-height 0.3s ease,padding 0.3s}
+.form-update.aberto{max-height:200px;padding:12px 14px}
+.form-update textarea{width:100%;padding:9px 12px;border:1.5px solid #C3D9F0;border-radius:10px;font-size:12px;font-family:'Inter',sans-serif;resize:none;outline:none;background:#fff;transition:border-color 0.15s;line-height:1.5}
+.form-update textarea:focus{border-color:var(--azul-mid)}
+.form-update-btns{display:flex;gap:8px;margin-top:8px;align-items:center}
+.form-data{font-size:11px;color:#888;flex:1}
+.btn-salvar{padding:7px 16px;border-radius:20px;border:none;background:var(--azul);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity 0.15s}
+.btn-salvar:hover{opacity:0.85}
+.btn-salvar:disabled{opacity:0.5;cursor:not-allowed}
+.btn-cancelar-f{padding:7px 12px;border-radius:20px;border:1.5px solid #C3D9F0;background:#fff;color:#666;font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:none;align-items:center;justify-content:center}
+.overlay.aberto{display:flex}
+.modal{background:#fff;border-radius:20px;padding:28px;width:90%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+.modal h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:18px;color:#1a1a2e}
+.modal label{font-size:11px;font-weight:600;color:#777;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px}
+.modal input,.modal select{width:100%;padding:10px 14px;border:1.5px solid #D1D5DB;border-radius:10px;font-size:13px;font-family:'Inter',sans-serif;outline:none;transition:border-color 0.15s;margin-bottom:14px}
+.modal input:focus,.modal select:focus{border-color:var(--azul-mid)}
+.modal-btns{display:flex;gap:10px;margin-top:2px}
+.btn-conf{flex:1;padding:11px;border:none;border-radius:10px;background:var(--azul);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.btn-canc{flex:1;padding:11px;border:1.5px solid #D1D5DB;border-radius:10px;background:#fff;color:#666;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+
+.sdrop{position:fixed;background:#fff;border:1px solid #E5EAF0;border-radius:14px;padding:6px;box-shadow:0 8px 30px rgba(0,0,0,0.13);z-index:300;min-width:195px;display:none}
+.sdrop.aberto{display:block}
+.sopt{display:flex;align-items:center;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;border:none;background:transparent;width:100%;font-family:'Inter',sans-serif;transition:background 0.12s}
+.sopt:hover{background:#F3F4F6}
+.sopt-badge{padding:3px 9px;border-radius:12px;font-size:10px;font-weight:600}
+
+footer{text-align:center;padding:16px;font-size:11px;color:#aaa;border-top:1px solid #E5EAF0;background:#fff}
+
+.s-aguardando{background:#FCE4D6;color:#833C00}.s-negociacao{background:#DDEBF7;color:#185FA5}
+.s-proposta{background:#E6F1FB;color:#0C447C}.s-analise{background:#F2F2F2;color:#444}
+.s-andamento{background:#DEEAF1;color:#1F4E79}.s-concluido{background:#EAF3DE;color:#27500A}
+.s-reuniao{background:#EDE9FE;color:#4C1D95}
+.l-aguardando{background:#ED7D31}.l-negociacao{background:#2E75B6}.l-proposta{background:#5B9BD5}
+.l-analise{background:#9CA3AF}.l-andamento{background:#3B82F6}.l-concluido{background:#639922}
+.l-reuniao{background:#7C3AED}
+
+@media(max-width:600px){header,.toolbar,.filtros-wrap,.busca-wrap,.grid-wrap,.resumo-strip{padding-left:16px;padding-right:16px}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div>
+      <h1>Painel de <span>Demandas</span><br>Comerciais</h1>
+      <p>Acompanhamento dos processos em andamento · Atualização automática</p>
+    </div>
+    <div class="header-stats">
+      <div class="hstat"><div class="hstat-num" id="cnt-total">—</div><div class="hstat-label">Demandas</div></div>
+      <div class="hstat"><div class="hstat-num" id="cnt-conv">—</div><div class="hstat-label">Convênios</div></div>
+      <div class="hstat"><div class="hstat-num" id="cnt-agd">—</div><div class="hstat-label">Aguardando</div></div>
+      <div class="hstat"><div class="hstat-num" id="cnt-conc">—</div><div class="hstat-label">Concluídas</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <span class="sync-badge">
+    <span class="sync-dot" id="sync-dot"></span>
+    <span class="sync-txt" id="sync-txt">Conectado ao Google Sheets</span>
+  </span>
+  <button class="btn-toolbar" onclick="abrirModalConvenio()">+ Novo convênio</button>
+  <button class="btn-toolbar btn-refresh" onclick="carregarDados()">↻ Atualizar</button>
+</div>
+
+<div class="resumo-strip" id="resumo"></div>
+<div class="busca-wrap"><input class="busca" type="text" id="busca" placeholder="Buscar convênio ou demanda..." oninput="renderGrid()"></div>
+<div class="filtros-wrap">
+  <div class="filtros-titulo">Filtrar por status</div>
+  <div class="filtros" id="filtros"></div>
+</div>
+<div class="grid-wrap">
+  <div id="loading" class="loading-wrap">
+    <div class="loading-spinner"></div>
+    <div class="loading-txt">Carregando dados do Google Sheets...</div>
+  </div>
+  <div class="grid" id="grid" style="display:none"></div>
+  <div class="nenhum" id="nenhum" style="display:none">Nenhuma demanda encontrada.</div>
+</div>
+
+<footer>Painel de Demandas Comerciais · Dados salvos automaticamente no Google Sheets</footer>
+
+<div class="sdrop" id="sdrop"><div id="sdrop-opts"></div></div>
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="m-titulo"></h3>
+    <div id="m-body"></div>
+    <div class="modal-btns">
+      <button class="btn-canc" onclick="fecharModal()">Cancelar</button>
+      <button class="btn-conf" id="m-ok">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbw4krOenywUTomaDs14EJIPHlAL5lI2WoBtcuP41nGZawzZivNbAJa9hykma1reWu7f/exec";
+
+const ST = {
+  aguardando:{label:"Aguardando operadora",cls:"s-aguardando",l:"l-aguardando",cor:"#ED7D31"},
+  negociacao:{label:"Em negociação",cls:"s-negociacao",l:"l-negociacao",cor:"#2E75B6"},
+  proposta:{label:"Proposta enviada",cls:"s-proposta",l:"l-proposta",cor:"#5B9BD5"},
+  analise:{label:"Em análise",cls:"s-analise",l:"l-analise",cor:"#9CA3AF"},
+  andamento:{label:"Em andamento",cls:"s-andamento",l:"l-andamento",cor:"#3B82F6"},
+  concluido:{label:"Concluído",cls:"s-concluido",l:"l-concluido",cor:"#639922"},
+  reuniao:{label:"Reunião agendada",cls:"s-reuniao",l:"l-reuniao",cor:"#7C3AED"},
+};
+
+const IC={"Demandas Gerais":"🏥","APUB":"📋","Bradesco":"🏦","CASSI":"🩺","Sulamérica":"💊","AMIL":"❤️","Marinha":"⚓","Banco Central / Pro Social":"🏛️","Select Saúde":"✅","Saúde Petrobras":"🔷","Saúde Caixa":"🏠","CNU":"🪪","Planserv":"📜","Unafisco":"⚖️","CASSEB":"🫁","CAMED":"💉"};
+
+let dados = [
+  {nome:"Demandas Gerais",demandas:[
+    {titulo:"Pacotes de Endometriose",situacao:"Propostas enviadas e em acompanhamento junto às operadoras",status:"proposta",historico:[]},
+    {titulo:"Implantes Hormonais",situacao:"Proposta confeccionada — reunião agendada p/ 28/05 c/ equipe estratégica",status:"reuniao",historico:[]},
+    {titulo:"Pacotes de Cabeça e Pescoço",situacao:"Propostas encaminhadas e em acompanhamento",status:"proposta",historico:[]},
+  ]},
+  {nome:"APUB",demandas:[{titulo:"Recontratualização",situacao:"Análise da minuta contratual em andamento",status:"analise",historico:[]}]},
+  {nome:"Bradesco",demandas:[
+    {titulo:"Cirurgia Endoscópica da Coluna",situacao:"Aguardando emissão do aditivo",status:"aguardando",historico:[]},
+    {titulo:"Reajuste Book HCR e HSA",situacao:"Aguardando aditivo de reajuste",status:"aguardando",historico:[]},
+    {titulo:"Especialidades TEA – IBR",situacao:"Aguardando aditivo (Fonoaudiologia e Psicopedagogia)",status:"aguardando",historico:[]},
+    {titulo:"Pacote de Endometriose",situacao:"Em tratativa ativa com a operadora",status:"negociacao",historico:[]},
+    {titulo:"Reajuste 2026",situacao:"Tratativas em andamento",status:"negociacao",historico:[]},
+  ]},
+  {nome:"CASSI",demandas:[
+    {titulo:"Pacote de Endometriose",situacao:"Em tratativa ativa com a operadora",status:"negociacao",historico:[]},
+    {titulo:"Pacote de Cabeça e Pescoço",situacao:"Em tratativa com a operadora",status:"negociacao",historico:[]},
+    {titulo:"Extensão – Emergência Cirurgia Geral",situacao:"Proposta de extensão enviada",status:"proposta",historico:[]},
+    {titulo:"Extensão LEM – IBR",situacao:"Proposta de extensão para o LEM–IBR enviada",status:"proposta",historico:[]},
+  ]},
+  {nome:"Sulamérica",demandas:[
+    {titulo:"Histeroscopia Cirúrgica e Diagnóstica",situacao:"Avaliação dos pacotes em andamento",status:"analise",historico:[]},
+    {titulo:"Redução Exames Laboratoriais (SAS)",situacao:"Análise da redução solicitada pela SAS",status:"analise",historico:[]},
+  ]},
+  {nome:"AMIL",demandas:[
+    {titulo:"HM Diferenciado – Endometriose/C&P",situacao:"Proposta de honorário médico diferenciado enviada",status:"proposta",historico:[]},
+    {titulo:"Pacote Endoscopia e Colonoscopia",situacao:"Proposta enviada, aguardando análise",status:"proposta",historico:[]},
+    {titulo:"Negociação de Reajuste",situacao:"Tratativas de reajuste em andamento",status:"negociacao",historico:[]},
+    {titulo:"Pacote de Emergência",situacao:"Aguardando retorno sobre proposta enviada",status:"aguardando",historico:[]},
+  ]},
+  {nome:"Marinha",demandas:[{titulo:"Composição de Edital",situacao:"Urologia, Ginecologia, Obstetrícia, Endoscopia, Colonoscopia, Diárias e Taxas",status:"proposta",historico:[]}]},
+  {nome:"Banco Central / Pro Social",demandas:[{titulo:"Credenciamento IBR",situacao:"Processo de credenciamento em andamento",status:"andamento",historico:[]}]},
+  {nome:"Select Saúde",demandas:[{titulo:"Credenciamento IBR",situacao:"Aguardando recebimento do contrato de credenciamento",status:"aguardando",historico:[]}]},
+  {nome:"Saúde Petrobras",demandas:[{titulo:"Pacotes de Ortopedia",situacao:"Proposta enviada, aguardando retorno",status:"proposta",historico:[]}]},
+  {nome:"Saúde Caixa",demandas:[
+    {titulo:"Ortopedia – Joelho",situacao:"Negociação finalizada com sucesso ✓",status:"concluido",historico:[]},
+    {titulo:"Ortopedia – Coluna",situacao:"Em análise pela operadora",status:"analise",historico:[]},
+    {titulo:"Ortopedia – Ombro",situacao:"Em análise pela operadora",status:"analise",historico:[]},
+    {titulo:"Ortopedia – Quadril",situacao:"Em análise pela operadora",status:"analise",historico:[]},
+  ]},
+  {nome:"CNU",demandas:[
+    {titulo:"Extensão Serviços – IBR",situacao:"Extensão de serviços para a unidade IBR em andamento",status:"andamento",historico:[]},
+    {titulo:"Pacote de Endometriose",situacao:"Proposta enviada, aguardando posição",status:"proposta",historico:[]},
+    {titulo:"Aditivo – Cabeça e Pescoço",situacao:"Aguardando emissão do aditivo pela CNU",status:"aguardando",historico:[]},
+  ]},
+  {nome:"Planserv",demandas:[{titulo:"Renovação de Edital",situacao:"Processo de renovação do edital em andamento",status:"andamento",historico:[]}]},
+  {nome:"Unafisco",demandas:[{titulo:"Recontratualização",situacao:"Processo de recontratualização em andamento",status:"andamento",historico:[]}]},
+  {nome:"CASSEB",demandas:[{titulo:"Extensão Especialidades",situacao:"Extensão para cirurgia torácica e neurocirurgia",status:"andamento",historico:[]}]},
+  {nome:"CAMED",demandas:[{titulo:"Pacotes de DIU",situacao:"Negociação dos pacotes em andamento",status:"negociacao",historico:[]}]},
+];
+
+let filtroAtivo="todos", sdropTarget=null;
+const histAberto=new Set(), formAberto=new Set();
+
+function cid(ci,di){return ci+"_"+di}
+function dataBR(){return new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'})}
+function esc(s){return(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+
+// ── SYNC STATUS ───────────────────────────────────────────
+function setSyncStatus(estado, msg){
+  const dot=document.getElementById("sync-dot");
+  const txt=document.getElementById("sync-txt");
+  dot.className="sync-dot"+(estado==="salvando"?" salvando":estado==="erro"?" erro":"");
+  txt.className="sync-txt"+(estado==="salvando"?" salvando":estado==="erro"?" erro":"");
+  txt.textContent=msg;
+}
+
+// ── CARREGAR DO SHEETS ────────────────────────────────────
+async function carregarDados(){
+  setSyncStatus("salvando","Carregando do Google Sheets...");
+  try {
+    const r = await fetch(API+"?action=get");
+    const json = await r.json();
+    if(json.ok && Object.keys(json.data).length > 0){
+      // Mescla dados do Sheets com dados base
+      dados.forEach((conv,ci)=>{
+        conv.demandas.forEach((d,di)=>{
+          const key = ci+"_"+di;
+          if(json.data[key]){
+            const remoto = json.data[key];
+            if(remoto.status)    d.status    = remoto.status;
+            if(remoto.titulo)    d.titulo    = remoto.titulo;
+            if(remoto.situacao)  d.situacao  = remoto.situacao;
+            if(remoto.historico) d.historico = remoto.historico;
+          }
+        });
+      });
+    }
+    setSyncStatus("ok","Sincronizado com Google Sheets");
+  } catch(e){
+    setSyncStatus("erro","Sem conexão — trabalhando offline");
+  }
+  document.getElementById("loading").style.display="none";
+  document.getElementById("grid").style.display="";
+  renderTudo();
+}
+
+// ── SALVAR NO SHEETS ──────────────────────────────────────
+async function salvarDemanda(ci, di){
+  setSyncStatus("salvando","Salvando...");
+  const d = dados[ci].demandas[di];
+  try {
+    await fetch(API, {
+      method:"POST",
+      body: JSON.stringify({
+        convenio: dados[ci].nome,
+        demanda_idx: ci+"_"+di,
+        dados: { status:d.status, titulo:d.titulo, situacao:d.situacao, historico:d.historico }
+      })
+    });
+    setSyncStatus("ok","Salvo no Google Sheets ✓");
+    setTimeout(()=>setSyncStatus("ok","Sincronizado com Google Sheets"), 2500);
+  } catch(e){
+    setSyncStatus("erro","Erro ao salvar — tente novamente");
+  }
+}
+
+// ── CONTADORES ────────────────────────────────────────────
+function qtdSt(k){return dados.flatMap(c=>c.demandas).filter(d=>d.status===k).length}
+function atualizarCtrl(){
+  const t=dados.flatMap(c=>c.demandas).length;
+  document.getElementById("cnt-total").textContent=t;
+  document.getElementById("cnt-conv").textContent=dados.length;
+  document.getElementById("cnt-agd").textContent=qtdSt("aguardando");
+  document.getElementById("cnt-conc").textContent=qtdSt("concluido");
+}
+
+// ── RESUMO ────────────────────────────────────────────────
+function renderResumo(){
+  const t=dados.flatMap(c=>c.demandas).length;
+  const cs=[
+    {key:"todos",label:"Todos",cls:"r-all",n:t},
+    {key:"aguardando",label:"Aguardando",cls:"r-agd",n:qtdSt("aguardando")},
+    {key:"negociacao",label:"Negociação",cls:"r-neg",n:qtdSt("negociacao")},
+    {key:"proposta",label:"Proposta env.",cls:"r-prop",n:qtdSt("proposta")},
+    {key:"analise",label:"Em análise",cls:"r-ana",n:qtdSt("analise")},
+    {key:"andamento",label:"Em andamento",cls:"r-and",n:qtdSt("andamento")},
+    {key:"concluido",label:"Concluído",cls:"r-conc",n:qtdSt("concluido")},
+    {key:"reuniao",label:"Reunião",cls:"r-reu",n:qtdSt("reuniao")},
+  ];
+  document.getElementById("resumo").innerHTML=cs.map(c=>`
+    <div class="r-card ${c.cls}${filtroAtivo===c.key?' ativo':''}" onclick="filtrar('${c.key}')">
+      <div class="r-num">${c.n}</div><div class="r-label">${c.label}</div>
+    </div>`).join("");
+}
+
+function renderFiltros(){
+  const bs=[{key:"todos",label:"Todos",cor:"#1F4E79"},...Object.entries(ST).map(([k,v])=>({key:k,label:v.label,cor:v.cor}))];
+  document.getElementById("filtros").innerHTML=bs.map(b=>`
+    <button class="f-btn${filtroAtivo===b.key?' ativo':''}" onclick="filtrar('${b.key}')">
+      ${b.key!=="todos"?`<span class="f-dot" style="background:${b.cor}"></span>`:""}${b.label}
+    </button>`).join("");
+}
+
+function filtrar(k){filtroAtivo=k;renderTudo()}
+
+// ── GRID ──────────────────────────────────────────────────
+function renderGrid(){
+  const busca=document.getElementById("busca").value.toLowerCase().trim();
+  let html="",vis=0;
+  dados.forEach((conv,ci)=>{
+    let dems=conv.demandas;
+    if(filtroAtivo!=="todos") dems=dems.filter(d=>d.status===filtroAtivo);
+    if(busca) dems=dems.filter(d=>conv.nome.toLowerCase().includes(busca)||d.titulo.toLowerCase().includes(busca)||d.situacao.toLowerCase().includes(busca));
+    if(!dems.length) return;
+    vis++;
+    const ic=IC[conv.nome]||"🏢";
+    const itens=dems.map(d=>{
+      const di=conv.demandas.indexOf(d);
+      const id=cid(ci,di);
+      const s=ST[d.status];
+      const histItens=(d.historico||[]).map((h,hi)=>`
+        <div class="hist-item">
+          <div class="hist-lv">
+            <div class="hist-dot"></div>
+            ${hi<d.historico.length-1?'<div class="hist-trail"></div>':''}
+          </div>
+          <div class="hist-corpo">
+            <div class="hist-data">${h.data}</div>
+            <div class="hist-texto">${esc(h.texto)}</div>
+          </div>
+          <button class="hist-del" onclick="delAndamento(${ci},${di},${hi})">×</button>
+        </div>`).join("");
+      const histHTML=`
+        <div class="historico${histAberto.has(id)?' aberto':''}" id="hist-${id}">
+          <div class="hist-titulo">Histórico de andamentos</div>
+          ${histItens||'<p class="hist-vazio">Nenhum andamento registrado ainda.</p>'}
+        </div>`;
+      const formHTML=`
+        <div class="form-update${formAberto.has(id)?' aberto':''}" id="form-${id}">
+          <textarea id="ta-${id}" rows="3" placeholder="Descreva o andamento desta semana..."></textarea>
+          <div class="form-update-btns">
+            <span class="form-data">📅 ${dataBR()}</span>
+            <button class="btn-cancelar-f" onclick="fecharForm('${id}')">Cancelar</button>
+            <button class="btn-salvar" id="btn-${id}" onclick="salvarAndamento(${ci},${di},'${id}')">Salvar</button>
+          </div>
+        </div>`;
+      return `
+        <div class="demanda-bloco" id="bloco-${id}">
+          <div class="demanda-topo">
+            <div class="d-linha ${s.l}"></div>
+            <div class="d-main">
+              <div class="d-titulo-row">
+                <input class="d-titulo" value="${esc(d.titulo)}"
+                  onchange="dados[${ci}].demandas[${di}].titulo=this.value;salvarDemanda(${ci},${di})">
+                <button class="d-badge ${s.cls}" onclick="abrirSdrop(event,${ci},${di})">${s.label} ▾</button>
+              </div>
+              <textarea class="d-situacao" rows="2"
+                onchange="dados[${ci}].demandas[${di}].situacao=this.value;salvarDemanda(${ci},${di})">${esc(d.situacao)}</textarea>
+              <div class="d-acoes-row">
+                <button class="btn-update" onclick="toggleForm('${id}')">+ Andamento</button>
+                ${(d.historico||[]).length>0?`<button class="btn-update" onclick="toggleHist('${id}')" style="color:#2E75B6;border-color:#C3D9F0">📋 ${d.historico.length} registro${d.historico.length>1?'s':''}</button>`:''}
+                <button class="btn-del-d" onclick="delDemanda(${ci},${di})">×</button>
+              </div>
+            </div>
+          </div>
+          ${histHTML}${formHTML}
+        </div>`;
+    }).join("");
+    html+=`
+      <div class="card">
+        <div class="card-header">
+          <div class="conv-icon">${ic}</div>
+          <div class="conv-nome">${conv.nome}</div>
+          <span class="conv-qtd">${dems.length} demanda${dems.length>1?'s':''}</span>
+          <button class="btn-icon" onclick="abrirModalDemanda(${ci})">+</button>
+        </div>
+        <div class="card-body">${itens}</div>
+      </div>`;
+  });
+  document.getElementById("grid").innerHTML=html;
+  document.getElementById("nenhum").style.display=vis===0?"block":"none";
+  document.querySelectorAll('.d-situacao').forEach(ta=>{
+    ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';
+    ta.addEventListener('input',function(){this.style.height='auto';this.style.height=this.scrollHeight+'px'});
+  });
+}
+
+// ── HISTÓRICO / FORM ──────────────────────────────────────
+function toggleHist(id){
+  const el=document.getElementById("hist-"+id);
+  if(!el) return;
+  histAberto.has(id)?histAberto.delete(id):histAberto.add(id);
+  el.classList.toggle("aberto");
+}
+function toggleForm(id){
+  const el=document.getElementById("form-"+id);
+  if(!el) return;
+  if(formAberto.has(id)){formAberto.delete(id);el.classList.remove("aberto")}
+  else{formAberto.add(id);el.classList.add("aberto");setTimeout(()=>{const ta=document.getElementById("ta-"+id);if(ta)ta.focus()},50)}
+}
+function fecharForm(id){formAberto.delete(id);const el=document.getElementById("form-"+id);if(el)el.classList.remove("aberto")}
+
+async function salvarAndamento(ci,di,id){
+  const ta=document.getElementById("ta-"+id);
+  if(!ta||!ta.value.trim()){alert("Escreva o andamento antes de salvar.");return}
+  const btn=document.getElementById("btn-"+id);
+  if(btn){btn.disabled=true;btn.textContent="Salvando..."}
+  if(!dados[ci].demandas[di].historico) dados[ci].demandas[di].historico=[];
+  dados[ci].demandas[di].historico.unshift({data:dataBR(),texto:ta.value.trim()});
+  histAberto.add(id);
+  formAberto.delete(id);
+  await salvarDemanda(ci,di);
+  renderTudo();
+}
+
+async function delAndamento(ci,di,hi){
+  if(!confirm("Remover este registro?")) return;
+  dados[ci].demandas[di].historico.splice(hi,1);
+  await salvarDemanda(ci,di);
+  renderTudo();
+}
+
+// ── STATUS DROPDOWN ───────────────────────────────────────
+function abrirSdrop(e,ci,di){
+  e.stopPropagation();sdropTarget={ci,di};
+  document.getElementById("sdrop-opts").innerHTML=Object.entries(ST).map(([k,v])=>`
+    <button class="sopt" onclick="selecionarStatus('${k}')">
+      <span class="sopt-badge ${v.cls}">${v.label}</span>
+    </button>`).join("");
+  const r=e.target.getBoundingClientRect(),dd=document.getElementById("sdrop");
+  dd.style.top=(r.bottom+window.scrollY+4)+"px";dd.style.left=r.left+"px";
+  dd.classList.add("aberto");
+}
+async function selecionarStatus(k){
+  if(!sdropTarget) return;
+  const {ci,di}=sdropTarget;
+  dados[ci].demandas[di].status=k;
+  fecharSdrop();
+  await salvarDemanda(ci,di);
+  renderTudo();
+}
+function fecharSdrop(){document.getElementById("sdrop").classList.remove("aberto");sdropTarget=null}
+document.addEventListener("click",e=>{if(!e.target.closest(".sdrop")&&!e.target.classList.contains("d-badge"))fecharSdrop()});
+
+// ── DELETAR ───────────────────────────────────────────────
+async function delDemanda(ci,di){
+  if(!confirm("Remover esta demanda?")) return;
+  dados[ci].demandas.splice(di,1);
+  if(!dados[ci].demandas.length) dados.splice(ci,1);
+  renderTudo();
+}
+
+// ── MODAL ─────────────────────────────────────────────────
+function abrirModalConvenio(){
+  document.getElementById("m-titulo").textContent="Novo convênio";
+  document.getElementById("m-body").innerHTML=`
+    <label>Nome</label><input id="m1" placeholder="Ex: Unimed" autocomplete="off">
+    <label>Ícone (emoji)</label><input id="m2" placeholder="🏥" maxlength="4" style="width:80px">`;
+  document.getElementById("m-ok").onclick=()=>{
+    const n=document.getElementById("m1").value.trim(),ic=document.getElementById("m2").value.trim()||"🏢";
+    if(!n){alert("Digite o nome.");return}
+    IC[n]=ic;dados.push({nome:n,demandas:[{titulo:"Nova demanda",situacao:"Descreva a situação",status:"andamento",historico:[]}]});
+    fecharModal();renderTudo();
+  };
+  document.getElementById("overlay").classList.add("aberto");
+  setTimeout(()=>document.getElementById("m1").focus(),100);
+}
+function abrirModalDemanda(ci){
+  document.getElementById("m-titulo").textContent="Nova demanda — "+dados[ci].nome;
+  const opts=Object.entries(ST).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join("");
+  document.getElementById("m-body").innerHTML=`
+    <label>Título</label><input id="m1" placeholder="Ex: Pacote de Ortopedia" autocomplete="off">
+    <label>Situação atual</label><input id="m2" placeholder="Ex: Proposta enviada em 10/06">
+    <label>Status</label><select id="m3">${opts}</select>`;
+  document.getElementById("m-ok").onclick=async()=>{
+    const t=document.getElementById("m1").value.trim(),s=document.getElementById("m2").value.trim(),st=document.getElementById("m3").value;
+    if(!t){alert("Digite o título.");return}
+    dados[ci].demandas.push({titulo:t,situacao:s||"–",status:st,historico:[]});
+    const di=dados[ci].demandas.length-1;
+    fecharModal();
+    await salvarDemanda(ci,di);
+    renderTudo();
+  };
+  document.getElementById("overlay").classList.add("aberto");
+  setTimeout(()=>document.getElementById("m1").focus(),100);
+}
+function fecharModal(){document.getElementById("overlay").classList.remove("aberto")}
+document.getElementById("overlay").addEventListener("click",e=>{if(e.target===e.currentTarget)fecharModal()});
+
+// ── RENDER TUDO ───────────────────────────────────────────
+function renderTudo(){atualizarCtrl();renderResumo();renderFiltros();renderGrid()}
+
+// ── INIT ──────────────────────────────────────────────────
+carregarDados();
+</script>
+</body>
+</html>
